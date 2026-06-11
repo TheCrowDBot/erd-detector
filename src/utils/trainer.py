@@ -2,34 +2,27 @@ from ultralytics.utils import DEFAULT_CFG_DICT
 from pathlib import Path
 from ultralytics import YOLO
 import yaml
-
+import torch
+import os
 
 
 class Trainer:
     def __init__(
-            self,
-            config_path: Path,
-            data: Path,
-            model_path: str = "models",
-            model_name: str = "yolo26l-obb.pt",
-        ):
-            self.config_path = config_path
-            self.model_path = Path(model_path)
-            self.model_name = model_name
-            self.model: YOLO = YOLO(self.model_path / self.model_name)
-            self.data = data
-
-            
+        self,
+        config_path: Path,
+        data: Path,
+        model: Path = Path("models/yolo26l-obb.pt"),
+    ):
+        self.config_path = config_path
+        self.model: YOLO = YOLO(model)
+        self.data = data
 
     def _validate_yaml(self, params):
-        print(params)
         valid_keys = DEFAULT_CFG_DICT.keys()
         unknown = set(params.keys()) - valid_keys
 
         if unknown:
-            raise ValueError(
-                f"Unknown Ultralytics config keys: {sorted(unknown)}"
-            )
+            raise ValueError(f"Unknown Ultralytics config keys: {sorted(unknown)}")
 
     def _flatten_yaml(self, config: dict) -> dict:
         flat = {}
@@ -48,8 +41,26 @@ class Trainer:
                 params = {}
         print("YAML Loaded")
         return params
-    
-    def train(self): 
+
+    def _clean_vram(self):
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        torch.cuda.empty_cache()
+
+    def evaluate(self):
+        self._clean_vram()
+        config = self._flatten_yaml(self._load_yaml(self.config_path))
+        if not config:
+            raise Exception("Validation Parameters not loaded")
+        self._validate_yaml(config)
+        self.results = self.model.val(data=str(self.data), **config)
+        return self.results
+
+    def train(self):
+        self._clean_vram()
         config = self._flatten_yaml(self._load_yaml(self.config_path))
         if not config:
             raise Exception("Training Parameters not loaded")

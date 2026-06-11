@@ -1,0 +1,13 @@
+val:
+  split: test # Using Test split as these images were never fed to the ai model while training
+  batch: 2
+  imgsz: 1920
+  conf: 0.5
+  iou: 0.3
+  line_width: 1
+  show_labels: false
+  show_conf: false
+  save: true
+  save_txt: true
+  save_conf: true 
+  visualize: true

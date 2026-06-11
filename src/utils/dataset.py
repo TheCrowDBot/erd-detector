@@ -1,57 +1,49 @@
 import os
-import zipfile
 import random
 from pathlib import Path
 import shutil
 import yaml
 from tqdm import tqdm
 
-class Dataset:
-    
-    def _move_pairs(self, pairs, split, images_dir, labels_dir):
-        for img_path, label_path in tqdm(
-            pairs,
-            desc=f"Moving {split}",
-            unit="file"
-        ):
-            shutil.move(
-                str(img_path),
-                str(images_dir / split / img_path.name)
-            )
-            shutil.move(
-                str(label_path),
-                str(labels_dir / split / label_path.name)
-            )
 
-    def _get_dataset_classes(self, classes_file): 
+class Dataset:
+
+    unzip_path: str | os.PathLike[str]
+    zip_file: str
+
+    def _move_pairs(self, pairs, split, images_dir, labels_dir) -> None:
+        for img_path, label_path in tqdm(pairs, desc=f"Moving {split}", unit="file"):
+            shutil.move(str(img_path), str(images_dir / split / img_path.name))
+            shutil.move(str(label_path), str(labels_dir / split / label_path.name))
+
+    def _get_dataset_classes(self, classes_file) -> list[str]:
         classes: list[str]
         with open(classes_file, "r") as f:
             classes = [line.strip() for line in f if line.strip()]
-        
+
         return classes
-    
-    def _create_yaml(self, base_path, classes): 
+
+    def _create_yaml(self, base_path, classes) -> None:
         config = {
             "path": str(base_path.absolute()),
             "train": "images/train",
             "val": "images/val",
             "test": "images/test",
-            "channels": 1, # this is for black and white images, we are training only on B&W images
+            "channels": 1,  # this is for black and white images, we are training only on B&W images
             "nc": len(classes),
-            "names": classes
+            "names": classes,
         }
         with open(base_path / "data.yaml", "w") as f:
             try:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
-            except Exception as e: 
+            except Exception as e:
                 print(f"Error creating YAML: {e}")
 
-    
     def _get_image_label_pairs(
         self,
         images_dir: Path,
         labels_dir: Path,
-    ) -> list[tuple[Path, Path]]: 
+    ) -> list[tuple[Path, Path]]:
         pairs = []
         for img_path in images_dir.iterdir():
             if img_path.is_file():
@@ -60,7 +52,9 @@ class Dataset:
                     pairs.append((img_path, label_path))
         return pairs
 
-    def split(self, train_ratio: float, val_ratio: float, seed: int, data_dir: str):
+    def split(
+        self, train_ratio: float, val_ratio: float, seed: int, data_dir: str
+    ) -> None:
         """
         Split the dataset into train, validation, and test subsets.
 
@@ -81,32 +75,30 @@ class Dataset:
         labels_dir: Path = base_path / "labels"
         classes_file = base_path / "classes.txt"
         if not classes_file.exists():
-            raise FileNotFoundError(
-                f"Missing classes file: {classes_file}"
-            )
+            raise FileNotFoundError(f"Missing classes file: {classes_file}")
 
         classes = self._get_dataset_classes(classes_file)
         pairs = self._get_image_label_pairs(images_dir, labels_dir)
 
-        random.seed(seed) # For reproducible splits
+        random.seed(seed)  # For reproducible splits
         random.shuffle(pairs)
 
         total = len(pairs)
-        
+
         # Compute split boundaries
         train_end = int(total * train_ratio)
         val_end = train_end + int(total * val_ratio)
 
         train_pairs = pairs[:train_end]
         val_pairs = pairs[train_end:val_end]
-        
+
         # Remaining samples are assigned to the test set.
         test_pairs = pairs[val_end:]
 
-        for split in ["train", "val", "test"]: 
+        for split in ["train", "val", "test"]:
             (images_dir / split).mkdir(parents=True, exist_ok=True)
             (labels_dir / split).mkdir(parents=True, exist_ok=True)
-        
+
         self._move_pairs(train_pairs, "train", images_dir, labels_dir)
         self._move_pairs(val_pairs, "val", images_dir, labels_dir)
         self._move_pairs(test_pairs, "test", images_dir, labels_dir)
@@ -116,10 +108,9 @@ class Dataset:
         print(f"✓ Val: {len(val_pairs)} images")
         print(f"✓ Test: {len(test_pairs)} images")
 
-
-    def _remove_files(self, path): 
-        if os.path.exists(path): 
-            try: 
+    def _remove_files(self, path) -> None:
+        if os.path.exists(path):
+            try:
                 if os.path.isdir(path):
                     shutil.rmtree(path)
                 else:
@@ -128,10 +119,15 @@ class Dataset:
             except Exception as e:
                 print(f"Error removing {path}: {e}")
 
-    def cleanup(self, should_remove_zip: bool = True, should_remove_dataset: bool = True):
-        if should_remove_dataset: 
-            self._remove_files(self.unzip_path)
-        
-        if should_remove_zip:
-            self._remove_files(self.zip_file)
+    def cleanup(
+        self,
+        should_remove_zip: bool = True,
+        should_remove_dataset: bool = True,
+        data_path: os.PathLike | None = None,
+        zip_file: os.PathLike | None = None,
+    ) -> None:
+        if should_remove_dataset:
+            self._remove_files(data_path or self.unzip_path)
 
+        if should_remove_zip:
+            self._remove_files(zip_file or self.zip_file)

@@ -1,0 +1,23 @@
+[project]
+name = "erd-detector"
+dynamic = ["version"]
+
+[tool.poe.tasks]
+format = "black src/"
+lint = "ruff check src/"
+lint_fix = "ruff check src/ --fix"
+typecheck = "mypy src/"
+
+# test = "pytest"
+
+check.sequence = [
+  "lint",
+  "typecheck",
+  # "test"
+]
+
+model = "python -m src.main"
+
+train = "python -m src.pipeline.train_pipeline"
+transfer = "python -m src.pipeline.transfer_pipeline"
+evaluate = "python -m src.pipeline.evaluate_pipeline"
