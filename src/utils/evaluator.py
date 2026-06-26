@@ -14,7 +14,7 @@ class Evaluator:
         dataset: str | Path,
         config: str | Path,
     ):
-        self.model = YOLO(str(model))
+        self.model = YOLO(str(model), verbose=True)
         self.dataset = Path(dataset)
         self.config = Path(config)
 

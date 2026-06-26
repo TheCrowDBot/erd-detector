@@ -5,9 +5,9 @@ val:
   conf: 0.5
   iou: 0.3
   line_width: 1
-  show_labels: false
-  show_conf: false
+  show_labels: true
+  show_conf: true
   save: true
   save_txt: true
-  save_conf: true 
+  save_conf: true
   visualize: true

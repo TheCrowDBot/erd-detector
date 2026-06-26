@@ -6,10 +6,10 @@ from pathlib import Path
 class TrainingResult:
     best_model: Path
     last_model: Path
-
+    dataset_yaml: Path
     save_dir: Path
 
-    epochs: int
+    # epochs: int
 
     precision: float
     recall: float

@@ -16,8 +16,11 @@ check.sequence = [
   # "test"
 ]
 
+
 model = "python -m src.main"
 
+
 train = "python -m src.pipeline.train_pipeline"
+experiment = "python -m src.freeze_sweep"
 transfer = "python -m src.pipeline.transfer_pipeline"
 evaluate = "python -m src.pipeline.evaluate_pipeline"

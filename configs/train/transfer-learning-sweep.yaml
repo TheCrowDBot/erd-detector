@@ -1,0 +1,22 @@
+config:
+  epochs: 200
+  patience: 20
+
+  imgsz: 1280
+
+  freeze: 10
+  optimizer: AdamW
+
+  lr0: 0.0008
+  lrf: 0.015
+
+  weight_decay: 0.0005
+
+  close_mosaic: 20
+  mosaic: 0.5
+
+  copy_paste: 0.1
+
+  box: 8
+  cls: 0.5
+  dfl: 1.5

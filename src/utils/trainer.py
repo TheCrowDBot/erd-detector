@@ -7,15 +7,18 @@ import os
 
 
 class Trainer:
+
     def __init__(
         self,
         config_path: Path,
         data: Path,
         model: Path = Path("models/yolo26l-obb.pt"),
+        overrides: dict | None = None,
     ):
         self.config_path = config_path
-        self.model: YOLO = YOLO(model)
+        self.model: YOLO = YOLO(model, verbose=True)
         self.data = data
+        self.overrides = overrides or {}
 
     def _validate_yaml(self, params):
         valid_keys = DEFAULT_CFG_DICT.keys()
@@ -64,7 +67,10 @@ class Trainer:
         config = self._flatten_yaml(self._load_yaml(self.config_path))
         if not config:
             raise Exception("Training Parameters not loaded")
-        self._validate_yaml(config)
 
+        # Apply runtime overrides
+        config.update(self.overrides)
+        self._validate_yaml(config)
+        print(config)
         self.results = self.model.train(data=str(self.data), **config)
         return self.results

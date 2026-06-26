@@ -12,7 +12,7 @@ class Dataset:
     zip_file: str
 
     def _move_pairs(self, pairs, split, images_dir, labels_dir) -> None:
-        for img_path, label_path in tqdm(pairs, desc=f"Moving {split}", unit="file"):
+        for img_path, label_path in tqdm(pairs, desc=f"Moving {split} ", unit="file"):
             shutil.move(str(img_path), str(images_dir / split / img_path.name))
             shutil.move(str(label_path), str(labels_dir / split / label_path.name))
 

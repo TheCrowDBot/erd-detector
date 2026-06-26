@@ -1,42 +1,25 @@
-from copy import deepcopy
-from pathlib import Path
 from src.utils.experiment_config_loader import ExperimentConfigLoader
+from src.schemas.experiment_result import ExperimentResult
+from copy import deepcopy
 
-from src.pipeline.train_pipeline import TrainPipeline
+
 from src.pipeline.transfer_pipeline import TransferPipeline
 from src.pipeline.evaluate_pipeline import EvaluatePipeline
 
-from src.schemas.experiment_result import ExperimentResult
 
-
-class ExperimentRunner:
+class TransferExperimentRunner:
 
     def run(
         self,
         cfg: ExperimentConfigLoader,
+        train_result,
     ) -> ExperimentResult:
 
         cfg = deepcopy(cfg)
 
-        #
-        # Stage 1
-        #
-        train_result = TrainPipeline().run(
-            download_cfg=cfg.train_download,
-            split_cfg=cfg.train_dataset,
-            train_cfg=cfg.train_model,
-            should_delete=False,
-        )
-
-        #
-        # Stage 2
-        #
-        best_model = Path(train_result.save_dir / "weights" / "best.pt")
-        train_result.best_model = best_model
-
         cfg.transfer_model.model = train_result.best_model
-        # cfg.transfer_model.dataset = train_result.dataset_yaml
-        #
+        cfg.transfer_model.dataset = train_result.dataset_yaml
+
         transfer_result = TransferPipeline().run(
             download_cfg=cfg.transfer_download,
             split_cfg=cfg.transfer_dataset,
@@ -44,15 +27,8 @@ class ExperimentRunner:
             should_delete=False,
         )
 
-        #
-        # Stage 3
-        #
-        best_model = Path(transfer_result.save_dir / "weights" / "best.pt")
-        transfer_result.best_model = best_model
-
         cfg.evaluation_model.model = transfer_result.best_model
-        # cfg.evaluation_model.dataset = transfer_result.dataset_yaml
-        #
+
         evaluation_result = EvaluatePipeline().run(
             download_cfg=cfg.evaluation_download,
             split_cfg=cfg.evaluation_dataset,

@@ -1,0 +1,49 @@
+train:
+  download:
+    project_id: 4
+    zip_path: dataset/train/source.zip
+    unzip_path: dataset/train
+
+  dataset:
+    data_dir: dataset/train
+    seed: 32442424
+    train_ratio: 0.8
+    val_ratio: 0.2
+
+  model:
+    model: models/yolo26l-obb.pt
+    dataset: dataset/train/data.yaml
+    config: configs/train/train.yaml
+
+transfer:
+  download:
+    project_id: 13
+    zip_path: dataset/transfer/source.zip
+    unzip_path: dataset/transfer
+
+  dataset:
+    data_dir: dataset/transfer
+    seed: 42355325353
+    train_ratio: 0.8
+    val_ratio: 0.2
+
+  model:
+    config: configs/train/transfer-learning-sweep.yaml
+    overrides: {}
+
+evaluation:
+  download:
+    project_id: 13
+    zip_path: dataset/eval/source.zip
+    unzip_path: dataset/eval
+
+  dataset:
+    data_dir: dataset/eval
+    seed: 523253253234
+    train_ratio: 0.0
+    val_ratio: 0.0
+
+  model:
+    config: configs/val/val.yaml
+    dataset: dataset/eval/data.yaml
+    overrides: {}

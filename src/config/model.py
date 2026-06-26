@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -8,3 +9,5 @@ class ModelConfig:
 
     model: Path | None = None
     dataset: Path | None = None
+
+    overrides: dict[str, Any] = field(default_factory=dict)

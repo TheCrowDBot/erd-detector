@@ -1,0 +1,3 @@
+transfer:
+  model:
+    config: configs/train/transfer-learning-sweep.yaml
