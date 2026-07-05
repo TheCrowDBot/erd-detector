@@ -1,6 +1,14 @@
-[project]
-name = "erd-detector"
-dynamic = ["version"]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
 
 [tool.poe.tasks]
 format = "black src/"
@@ -8,19 +16,40 @@ lint = "ruff check src/"
 lint_fix = "ruff check src/ --fix"
 typecheck = "mypy src/"
 
-# test = "pytest"
-
 check.sequence = [
   "lint",
   "typecheck",
-  # "test"
 ]
 
-
 model = "python -m src.main"
-
-
 train = "python -m src.pipeline.train_pipeline"
 experiment = "python -m src.freeze_sweep"
 transfer = "python -m src.pipeline.transfer_pipeline"
 evaluate = "python -m src.pipeline.evaluate_pipeline"
+
+[tool.poetry]
+name = "erd-detector"
+version = "0.1.0"
+description = "ERD detector training and evaluation pipeline"
+authors = [
+  "Rúben Costa <rubenlavoscosta@gmail.com>",
+  "Miguel Dias <miguelpintodias@hotmail.com>",
+]
+packages = [{ include = "src" }]
+readme = "readme.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+black = "^26.5.1"
+mypy = "^2.1.0"
+poethepoet = "^0.46.0"
+ruff = "^0.15.19"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
